@@ -3,6 +3,8 @@ package sqldb
 import (
 	"context"
 	"fmt"
+	"os"
+	"path/filepath"
 	"time"
 
 	"github.com/upper/db/v4"
@@ -72,9 +74,30 @@ func createPostGresDBSessionWithCreds(cfg *config.PostgreSQLConfig, persistPool 
 	}
 
 	if cfg.SSL {
-		if cfg.SSLMode != "" {
+		if cfg.SSLMode != "" && cfg.SSLMode != "disable" {
+			// Validate that the certificate directory exists and is valid, then check required files.
+			if certDir, err := os.Stat(cfg.TlsCertDir); err != nil || !certDir.IsDir() {
+				return nil, fmt.Errorf("invalid certificate directory %q: %v", cfg.TlsCertDir, err)
+			}
+			for _, file := range []struct {
+				name  string
+				label string
+			}{
+				{"ca.crt", "CA certificate"},
+				{"tls.key", "TLS key"},
+				{"tls.crt", "TLS certificate"},
+			} {
+				filePath := filepath.Join(cfg.TlsCertDir, file.name)
+				if cert, err := os.Stat(filePath); err != nil || cert.IsDir() {
+					return nil, fmt.Errorf("%s missing or invalid at %q: %v", file.label, filePath, err)
+				}
+			}
+
 			options := map[string]string{
-				"sslmode": cfg.SSLMode,
+				"sslmode":     cfg.SSLMode,
+				"sslrootcert": filepath.Join(cfg.TlsCertDir, "ca.crt"),
+				"sslkey":      filepath.Join(cfg.TlsCertDir, "tls.key"),
+				"sslcert":     filepath.Join(cfg.TlsCertDir, "tls.crt"),
 			}
 			settings.Options = options
 		}
