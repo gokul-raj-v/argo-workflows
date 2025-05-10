@@ -83,9 +83,9 @@ func createPostGresDBSessionWithCreds(cfg *config.PostgreSQLConfig, persistPool 
 				name  string
 				label string
 			}{
-				{"ca.crt", "CA certificate"},
-				{"tls.key", "TLS key"},
-				{"tls.crt", "TLS certificate"},
+				{cfg.CaCertFileName, "CA certificate"},
+				{cfg.ClientKeyFileName, "TLS key"},
+				{cfg.ClientCertFileName, "TLS certificate"},
 			} {
 				filePath := filepath.Join(cfg.TlsCertDir, file.name)
 				if cert, err := os.Stat(filePath); err != nil || cert.IsDir() {
@@ -95,9 +95,9 @@ func createPostGresDBSessionWithCreds(cfg *config.PostgreSQLConfig, persistPool 
 
 			options := map[string]string{
 				"sslmode":     cfg.SSLMode,
-				"sslrootcert": filepath.Join(cfg.TlsCertDir, "ca.crt"),
-				"sslkey":      filepath.Join(cfg.TlsCertDir, "tls.key"),
-				"sslcert":     filepath.Join(cfg.TlsCertDir, "tls.crt"),
+				"sslrootcert": filepath.Join(cfg.TlsCertDir, cfg.CaCertFileName),
+				"sslkey":      filepath.Join(cfg.TlsCertDir, cfg.ClientKeyFileName),
+				"sslcert":     filepath.Join(cfg.TlsCertDir, cfg.ClientCertFileName),
 			}
 			settings.Options = options
 		}

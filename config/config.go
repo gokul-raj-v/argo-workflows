@@ -264,9 +264,12 @@ func (c DatabaseConfig) GetHostname() string {
 
 type PostgreSQLConfig struct {
 	DatabaseConfig
-	SSL        bool   `json:"ssl,omitempty"`
-	SSLMode    string `json:"sslMode,omitempty"`
-	TlsCertDir string `json:"tlsCertDir,omitempty"`
+	SSL                bool   `json:"ssl,omitempty"`
+	SSLMode            string `json:"sslMode,omitempty"`
+	TlsCertDir         string `json:"tlsCertDir,omitempty"`
+	CaCertFileName     string `json:"caCertFileName,omitempty"`
+	ClientCertFileName string `json:"clientCertFileName,omitempty"`
+	ClientKeyFileName  string `json:"clientKeyFileName,omitempty"`
 }
 
 type MySQLConfig struct {
